@@ -1,0 +1,63 @@
+Fichier Conception:
+
+Le jeu TWIC:
+
+Les classes de bases, comme Grass, Bombe, Monster et d’autres sont restés inchangés (exceptés les interactions avec les
+nouveaux acteurs) du jeu ARPG. D’autres ont été créés de toutes pièces et certaines on été légèrement modifié du jeu
+ARPG afin de les améliorer. Tout d’abord le DarkLord a subit quelques modifications concernant sa téléportation. A
+présent il se téléporte a une distance minimale de lui même, et calcule plusieurs points de teleportation possible,
+puis choisis le plus loin du player. Cela évite généralement de le voir se téléporter sur le player plusieurs fois
+d’affiler.
+
+L’inventaire continue de s’afficher comme dans ARPG mais il est à présent aussi possible d’ouvrir une grande fenêtre
+avec tout l’inventaire et de selectionner un item en particulier. De plus nous avons ajouter une boutique pour acheter
+des items. Afin de garder une certaine encapsulation, c'est le shop qui a acces a notre inventaire pour nous retirer
+l'argent et nous ajouter l'item. Cela oblige le player a payer. Cependant l'affichage du shop se controle depuis le
+player qui a un mode expres pour cela. Il le controle a travers l'index de l'item courrant du shop ce qui permet de
+garder une protection sur l'encapsulation.
+
+Pour les items, nous avons rajouter un item HEART qui restitue un point de vie, ce qui est un peu l’équivalent d’une
+potion, et un item ARROW_HEAD_RESEARCHER qui est un nouvel acteur. Cet acteur agit dans un premier temps un peu comme
+un projectile. Puis, il va interagir avec une cible (un Monstre) et déterminé ses coordonnées. Puis à l’aide de
+l'algorithme DisplacementIA que nous avons créé dans le package twic.utils, elle se dirige vers sa cible. Une fois
+qu’elle l’a atteinte, elle revient vers le player pour être de nouveau ramasser. Pour cela son interaction a distance
+s’assure de bien vouloir une interaction avec la case où est le player.  Ce qui lui permet de constamment avoir les
+coordonnées du player. Comme nous venons d’en parler, le package twic.utils comprends deux classes qui ne contiennent
+que des méthodes et attributs static et qui permettent de trouver une orientation pour leur déplacement afin d’atteindre
+des coordonnées spécifiques. DisplacementIA est la premiere version de cette algorithme.
+
+Nous avons créez un nouvel acteur qui utilise cet algorithme pour se déplacer: le Zombie qui est aussi un Monstre. Le
+but de ce monstre était de rendre le gameplay du jeu un peu plus compliqué, notamment par le fait que le zombies vous
+repère très facilement puis arrive très bien à vous suivre. Cependant, avec l’algorithme DisplacementIA, le zombie
+était incapable de contourner un mur aussi petit soit il. C’est pour cela que nous avons mis au point une seconde
+version de cet algorithme dans la classe DisplacementAdvancedIA. Désormais, le zombie qui arrive fasse a un mur, va
+trouver une nouvelle destination provisoire dont il peut accéder facilement. Puis une fois cette destination atteinte,
+il reprend sa véritable destination. Cet algorithme rend le gameplay avec le zombie très interessant.
+
+Enfin nous avons ajouté un acteur Dragon qui est également un Monstre mais lui vole comme le FlameSkull. Pour son
+déplacement, cela reprend un peu l’algorithme utilisé pour le zombie mais cette fois le dragon fait en sorte de rester
+à distance pour cracher ses flammes. Ses flammes sont des DragonSpell qui sont équivalent aux FireSpell exceptés la
+façon dont elles se propagent. Chaque DragonSpell crée une nouvelle DragonSpell en face de lui en dans ses deux
+diagonales en face. Cela permet de créer un grand triangle de flammes qui imite bien le souffle d’un dragon.
+
+Nous avons ajoutés une fonctionnalité intéressante: le spawn des monstres. Chaque aire possède un certain nombre de
+monstre et de différents types. Si certains monstres de l’air meurent, au bout d’un certain temps, l’update de TWICArea
+(auparavant equivalent a ARPGArea) va faire en sorte de replacer ces monstres et à des coordonnées complètement
+aléatoire.
+
+Une partie importante de notre jeu TWIC est le développement d’histoires (Story). Nous avons pour cela créez un package
+twic.area.story car chaque aire contient sa propre Story, même si l’histoire est globale. Nous nous sommes demandés
+comment implémenter le principe d’histoire, dans le sens où une partie d’histoire est activé par un événement, que le
+jeu doit probablement se mettre en pause tout en laissant la possibilité a des acteurs de se déplacer. Donc finalement,
+nous avons créé une classe abstraite Story comme une AreaEntity qui étend Interactor. Cette Classe oblige la définition
+des méthodes updatesStory et de la méthode isEnded. Une story est aussi une AreaEntity ce qui lui permet d’interagir
+avec des acteurs comme par exemple si le player arrive sur une case particulier, ou qu’un certain monstre meurt dans
+l’aire etc... Pour chaque histoire créez, un type énuméré définie son avancement. Ainsi l’updateStory qui s’effectue
+n’est pas le meme en fonction de son avancement dans l’histoire. Pour mettre le jeu en pause nous avons implémenter la
+méthode suspend() dans la classe Area. Pour faire bouger un personnage, nous avons utiliser notre algorithme
+DiscplacementAdvancedIA pour les faire bouger jusau’à une destination. Les acteurs qui prennent part à l’histoire ont
+une méthode updateStory leur permettant de bouger mais rien de plus. Pour les dialogues, la classe TextGraphic ne
+marchant pas sur Mac (et l’un des deux membres de notre duo est sous Mac), nous avons créez un sprite pour chaque
+dialogue différent. Le concept de story aura été très intéressant à coder, et avec les bons outils comme un algorithme
+pour le déplacement vers une destination, nous pouvons faire plein d’animation plutôt jolie sans trop de connaissance
+en programmation.
